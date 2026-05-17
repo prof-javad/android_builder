@@ -7,39 +7,31 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # قدم ۱: یک نسخه از خود پروژه android_builder را چک می‌کنیم
       - name: Checkout the builder code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      # قدم ۲: تنظیم JDK نسخه ۱۷ (به جای نسخه ۸ قدیمی)
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # قدم ۳: خواندن اسم پروژه (یعنی همون mobilepoly) از فایل
       - id: get-project
         name: Get project name
         run: echo "PROJECT=$(cat project-to-build)" >> $GITHUB_OUTPUT
 
-      # قدم ۴: کلون کردن پروژه اصلی mobilepoly با تمام کدهایش
       - name: Clone the main project
         run: git clone --depth=1 ${{ steps.get-project.outputs.PROJECT }} project
 
-      # قدم ۵: ساخت برنامه (جادوی اصلی اینجا اتفاق می‌افتد)
       - name: Build the APK
         working-directory: ./project
         run: |
-          # اول به Gradle می‌گوییم خودش را برای پروژه تنظیم کند (اگر فایل gradlew نبود)
           if [ ! -f "gradlew" ]; then gradle wrapper; fi
-          # بعد دستور ساخت نهایی را صادر می‌کنیم
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
 
-      # قدم ۶: آپلود فایل APK نهایی برای دانلود
       - name: Upload the final APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: monopoly-apk
           path: ./project/**/*.apk
