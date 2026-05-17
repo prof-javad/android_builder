@@ -31,23 +31,25 @@ jobs:
       - name: Update Gradle and Memory Settings
         working-directory: ./project/android
         run: |
-          # 1. ارتقاء نسخهٔ Gradle به 7.6.4 برای رفع باگ‌های داخلی
           sed -i 's/gradle-7.5.1-all.zip/gradle-7.6.4-all.zip/g' gradle/wrapper/gradle-wrapper.properties
-          
-          # 2. افزایش حافظهٔ اختصاصی برای Gradle Daemon (2GB)
           echo "" >> gradle.properties
           echo "# Increase memory for Gradle Daemon" >> gradle.properties
           echo "org.gradle.jvmargs=-Xmx2048M -XX:MaxMetaspaceSize=512M" >> gradle.properties
-          
-          # 3. غیرفعال کردن بهینه‌سازی‌های آزمایشی که می‌توانند مشکل‌ساز باشند
           echo "android.disableAutomaticComponentCreation=true" >> gradle.properties
-          
           echo "=== Updated gradle-wrapper.properties ==="
           cat gradle/wrapper/gradle-wrapper.properties
 
       - name: Install Node dependencies
         working-directory: ./project
         run: npm install
+
+      - name: Fix corrupted boost file
+        run: |
+          mkdir -p ./project/node_modules/expo-modules-core/android/build/downloads
+          echo "Downloading boost_1_76_0.tar.gz from official source..."
+          curl -L -o ./project/node_modules/expo-modules-core/android/build/downloads/boost_1_76_0.tar.gz \
+            "https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.gz"
+          ls -lh ./project/node_modules/expo-modules-core/android/build/downloads/
 
       - name: Build the APK
         working-directory: ./project/android
