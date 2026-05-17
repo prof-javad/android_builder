@@ -23,11 +23,11 @@ jobs:
       - name: Clone the main project
         run: git clone --depth=1 ${{ steps.get-project.outputs.PROJECT }} project
 
-      - name: List project structure
-        run: ls -la ./project
+      - name: List ALL files with full paths
+        run: find ./project -type f -name "*.gradle*" -o -name "gradlew" | sort
 
       - name: Build the APK
-        working-directory: ./project/mobilepoly-master
+        working-directory: ./project/mobilepoly
         run: |
           if [ ! -f "gradlew" ]; then gradle wrapper; fi
           chmod +x gradlew
