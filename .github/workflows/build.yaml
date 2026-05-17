@@ -43,22 +43,12 @@ jobs:
         working-directory: ./project
         run: npm install
 
-      - name: Fix corrupted boost file (from SourceForge)
-        run: |
-          BOOST_DIR="./project/node_modules/expo-modules-core/android/build/downloads"
-          mkdir -p $BOOST_DIR
-          echo "Downloading boost_1_76_0.tar.gz from SourceForge..."
-          curl -L -o "$BOOST_DIR/boost_1_76_0.tar.gz" \
-            "https://sourceforge.net/projects/boost/files/boost/1.76.0/boost_1_76_0.tar.gz/download"
-          ls -lh $BOOST_DIR/
-
-      - name: Build the APK
+      - name: Build the APK (Skipping Broken Boost Task)
         working-directory: ./project/android
         run: |
-          # <<< این خط طلایی را اضافه کنید >>>
           export CFLAGS="-I$GITHUB_WORKSPACE/project/node_modules/expo-modules-core/android/build/third-party-ndk/boost/boost_1_76_0"
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace --no-daemon
+          ./gradlew assembleDebug --stacktrace --no-daemon -x prepareBoost -x extractBoostHeaders -x downloadBoost
 
       - name: Upload the final APK
         if: success()
