@@ -16,6 +16,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '18'
+
       - id: get-project
         name: Get project name
         run: echo "PROJECT=$(cat project-to-build)" >> $GITHUB_OUTPUT
@@ -23,12 +28,14 @@ jobs:
       - name: Clone the main project
         run: git clone --depth=1 ${{ steps.get-project.outputs.PROJECT }} project
 
+      - name: Install Node dependencies
+        working-directory: ./project
+        run: npm install
+
       - name: Fix settings.gradle completely
         working-directory: ./project/android
         run: |
-          # کل خط ۳ را با یک دستور ساده و درست جایگزین می‌کنیم
           sed -i '3s|.*|apply from: new File(rootDir, "../node_modules/expo/scripts/autolinking.gradle")|' settings.gradle
-          # محتوای فایل را چاپ می‌کنیم تا مطمئن شویم
           echo "=== New settings.gradle content ==="
           cat settings.gradle
 
