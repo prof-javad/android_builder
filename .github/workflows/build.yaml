@@ -23,11 +23,14 @@ jobs:
       - name: Clone the main project
         run: git clone --depth=1 ${{ steps.get-project.outputs.PROJECT }} project
 
-      - name: Fix settings.gradle path issue
+      - name: Fix settings.gradle completely
         working-directory: ./project/android
         run: |
-          # خط 3 فایل settings.gradle را اصلاح می‌کنیم تا مسیر اسکریپت را درست بدهد
-          sed -i "3s|apply from: new File(\"\(.*\)\"|apply from: new File(rootDir, \"\1\"|" settings.gradle
+          # کل خط ۳ را با یک دستور ساده و درست جایگزین می‌کنیم
+          sed -i '3s|.*|apply from: new File(rootDir, "../node_modules/expo/scripts/autolinking.gradle")|' settings.gradle
+          # محتوای فایل را چاپ می‌کنیم تا مطمئن شویم
+          echo "=== New settings.gradle content ==="
+          cat settings.gradle
 
       - name: Build the APK
         working-directory: ./project/android
@@ -35,6 +38,11 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
 
+      - name: Upload the final APK
+        uses: actions/upload-artifact@v5
+        with:
+          name: monopoly-apk
+          path: ./project/**/*.apk
       - name: Upload the final APK
         uses: actions/upload-artifact@v5
         with:
