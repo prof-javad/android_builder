@@ -43,8 +43,3 @@ jobs:
         with:
           name: monopoly-apk
           path: ./project/**/*.apk
-      - name: Upload the final APK
-        uses: actions/upload-artifact@v5
-        with:
-          name: monopoly-apk
-          path: ./project/**/*.apk
