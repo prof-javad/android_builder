@@ -35,10 +35,8 @@ jobs:
       - name: Fix settings.gradle (after npm install)
         working-directory: ./project/android
         run: |
-          # قبل از اصلاح، یک کپی از فایل اصلی برای نمایش می‌گیریم
           echo "=== Before fix ==="
           head -n 5 settings.gradle
-          # حالا اصلاح را انجام می‌دهیم
           sed -i '3s|.*|apply from: new File(rootDir, "../node_modules/expo/scripts/autolinking.gradle")|' settings.gradle
           echo "=== After fix ==="
           head -n 5 settings.gradle
@@ -49,7 +47,18 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-build-cache --stacktrace
 
+      # این قدم همیشه اجرا می‌شود، چه بیلد موفق باشد چه ناموفق
+      - name: Upload Kotlin Plugin Cache
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: kotlin-plugin-files
+          path: |
+            ~/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin.jvm/org.jetbrains.kotlin.jvm.gradle.plugin/1.6.10/**/*.jar
+            ~/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin.jvm/org.jetbrains.kotlin.jvm.gradle.plugin/1.6.10/**/*.pom
+
       - name: Upload the final APK
+        if: success()
         uses: actions/upload-artifact@v5
         with:
           name: monopoly-apk
