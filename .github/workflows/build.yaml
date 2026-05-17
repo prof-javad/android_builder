@@ -23,13 +23,9 @@ jobs:
       - name: Clone the main project
         run: git clone --depth=1 ${{ steps.get-project.outputs.PROJECT }} project
 
-      - name: List ALL files with full paths
-        run: find ./project -type f -name "*.gradle*" -o -name "gradlew" | sort
-
       - name: Build the APK
-        working-directory: ./project/mobilepoly
+        working-directory: ./project/android
         run: |
-          if [ ! -f "gradlew" ]; then gradle wrapper; fi
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
 
