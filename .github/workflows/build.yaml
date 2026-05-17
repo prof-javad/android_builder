@@ -32,18 +32,22 @@ jobs:
         working-directory: ./project
         run: npm install
 
-      - name: Fix settings.gradle completely
+      - name: Fix settings.gradle (after npm install)
         working-directory: ./project/android
         run: |
+          # قبل از اصلاح، یک کپی از فایل اصلی برای نمایش می‌گیریم
+          echo "=== Before fix ==="
+          head -n 5 settings.gradle
+          # حالا اصلاح را انجام می‌دهیم
           sed -i '3s|.*|apply from: new File(rootDir, "../node_modules/expo/scripts/autolinking.gradle")|' settings.gradle
-          echo "=== New settings.gradle content ==="
-          cat settings.gradle
+          echo "=== After fix ==="
+          head -n 5 settings.gradle
 
-      - name: Build the APK
+      - name: Build the APK with no cache
         working-directory: ./project/android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --no-build-cache --stacktrace
 
       - name: Upload the final APK
         uses: actions/upload-artifact@v5
