@@ -43,19 +43,27 @@ jobs:
         working-directory: ./project
         run: npm install
 
-      - name: Fix corrupted boost file
+      - name: Fix corrupted boost file (from SourceForge)
         run: |
-          mkdir -p ./project/node_modules/expo-modules-core/android/build/downloads
-          echo "Downloading boost_1_76_0.tar.gz from official source..."
-          curl -L -o ./project/node_modules/expo-modules-core/android/build/downloads/boost_1_76_0.tar.gz \
-            "https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.gz"
-          ls -lh ./project/node_modules/expo-modules-core/android/build/downloads/
+          BOOST_DIR="./project/node_modules/expo-modules-core/android/build/downloads"
+          mkdir -p $BOOST_DIR
+          echo "Downloading boost_1_76_0.tar.gz from SourceForge..."
+          curl -L -o "$BOOST_DIR/boost_1_76_0.tar.gz" \
+            "https://sourceforge.net/projects/boost/files/boost/1.76.0/boost_1_76_0.tar.gz/download"
+          ls -lh $BOOST_DIR/
+
+      - name: Disable Broken Boost Task
+        working-directory: ./project/android
+        run: |
+          echo "" >> gradle.properties
+          echo "# Disable the task that tries to extract the corrupted boost archive" >> gradle.properties
+          echo "expo.disableBoostPreparation=true" >> gradle.properties
 
       - name: Build the APK
         working-directory: ./project/android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace --no-daemon
+          ./gradlew assembleDebug --stacktrace --no-daemon -x prepareBoost
 
       - name: Upload the final APK
         if: success()
