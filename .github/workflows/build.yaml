@@ -1,25 +1,28 @@
-name: Download Kotlin Plugin JAR
+name: Find Gradle Cache Hash
 
 on:
   workflow_dispatch:
 
 jobs:
-  download-jar:
+  find-hash:
     runs-on: ubuntu-latest
     steps:
-      - name: Download the required JAR file
+      - name: Download Kotlin plugin to generate cache
         run: |
-          # ما فایل را مستقیماً از مخزن رسمی Maven Central دانلود می‌کنیم
-          # از curl با قابلیت دنبال کردن تغییر مسیر استفاده می‌کنیم
-          curl -L -o org.jetbrains.kotlin.jvm.gradle.plugin-1.6.10.jar \
-            "https://repo1.maven.org/maven2/org/jetbrains/kotlin/jvm/org.jetbrains.kotlin.jvm.gradle.plugin/1.6.10/org.jetbrains.kotlin.jvm.gradle.plugin-1.6.10.jar"
-          
-          # حجم فایل را نمایش می‌دهیم تا از صحت آن مطمئن شویم
-          echo "Download completed. File size:"
-          ls -lh org.jetbrains.kotlin.jvm.gradle.plugin-1.6.10.jar
+          mkdir -p ~/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin.jvm/org.jetbrains.kotlin.jvm.gradle.plugin/1.6.10/
+          curl -L -o /tmp/test.jar "https://repo1.maven.org/maven2/org/jetbrains/kotlin/jvm/org.jetbrains.kotlin.jvm.gradle.plugin/1.6.10/org.jetbrains.kotlin.jvm.gradle.plugin-1.6.10.jar"
+          # یک پروژه ساده Gradle می‌سازیم تا Cache واقعی تولید شود
+          mkdir test-project && cd test-project
+          gradle init --type basic --dsl kotlin --project-name test --no-incubating --no-daemon
+          echo "plugins { id('org.jetbrains.kotlin.jvm') version '1.6.10' }" >> build.gradle.kts
+          gradle tasks --no-daemon 2>/dev/null || true
+          cd ..
 
-      - name: Upload JAR file as Artifact
-        uses: actions/upload-artifact@v5
-        with:
-          name: kotlin-jvm-plugin-jar
-          path: org.jetbrains.kotlin.jvm.gradle.plugin-1.6.10.jar
+      - name: Find and show exact cache path
+        run: |
+          echo "=== Searching for Kotlin plugin cache ==="
+          find ~/.gradle/caches -name "*.jar" -path "*1.6.10*" 2>/dev/null | head -5
+          echo "=== Directory listing with hashes ==="
+          ls -la ~/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin.jvm/org.jetbrains.kotlin.jvm.gradle.plugin/1.6.10/ 2>/dev/null || echo "Path not found"
+          echo "=== Full path with subdirectories ==="
+          find ~/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin.jvm/ -type d 2>/dev/null
