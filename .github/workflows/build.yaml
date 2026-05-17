@@ -23,6 +23,12 @@ jobs:
       - name: Clone the main project
         run: git clone --depth=1 ${{ steps.get-project.outputs.PROJECT }} project
 
+      - name: Fix settings.gradle path issue
+        working-directory: ./project/android
+        run: |
+          # خط 3 فایل settings.gradle را اصلاح می‌کنیم تا مسیر اسکریپت را درست بدهد
+          sed -i "3s|apply from: new File(\"\(.*\)\"|apply from: new File(rootDir, \"\1\"|" settings.gradle
+
       - name: Build the APK
         working-directory: ./project/android
         run: |
